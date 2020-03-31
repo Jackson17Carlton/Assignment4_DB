@@ -123,7 +123,7 @@ string * addClient()
     string firstName, city, insertValues, zipCode, tableName;
     static string clientDetails[2]; //used to pass around client details
     tableName = "CLIENTS";
-    cout << "Thanks for buying from us! We just need a little bit of information from you" << endl;
+    cout << "Thanks for buying from us! We just need a little bit of information from you." << endl;
     cout << "What's your first name? ";
     cin >> firstName;
     cin.ignore();
@@ -155,17 +155,18 @@ void purchasePolicy(string id, string city)
     cout << "Enter the type of policy you would like to purchase: ";
     cin >> policyChoice;
     cin.ignore();
-    policyChoice = boost::lexical_cast<string>(policyChoice);
+    policyChoice = boost::lexical_cast<string>(policyChoice); //convert policyChoice to caps
     queryPolicies = "SELECT TYPE FROM POLICY WHERE TYPE = '" + policyChoice + "';";
     bool typeExists = query(queryPolicies);
     if(typeExists)
     {
         string agentsQuery, policyId, amount, soldQuery, agentId;
+        cout << "We do offer " + policyChoice + " insurance policies!" << endl;
         agentsQuery = "SELECT A_ID AS Agents_ID, A_NAME as Agents_name, A_CITY as Your_City FROM AGENTS WHERE A_CITY = '" + clientCity + "';";
         query(agentsQuery);
         cout << "Enter an agent ID from your town to purchase a policy from: ";
         cin >> agentId;
-        printPolicies = "SELECT * FROM POLICY;";
+        printPolicies = "SELECT * FROM POLICY WHERE type = '" + policyChoice + "';";
         query(printPolicies); // Prints table of policies to purchase
         cout << "Enter a policy ID for the insurance policy you'd like to purchase: ";
         cin.ignore();
@@ -179,7 +180,7 @@ void purchasePolicy(string id, string city)
         insert("POLICIES_SOLD", soldQuery); //inserts into policies sold
         query("SELECT * FROM POLICIES_SOLD");
         cout << "Your purchase has gone through, reference the policies sold table for proof of purchase!" << endl;
-        cout << "Your purchase ID will be" + purchaseId + "." << endl;
+        cout << "Your purchase ID will be " + purchaseId + "." << endl;
         autoPurchaseId++;
     }
     else
@@ -199,7 +200,6 @@ void listPolicies()
     cin >> agentCity;
     cin.ignore();
     agentQuery = "SELECT * FROM AGENTS WHERE a_name = '" + agentName + "' AND a_city = '" + agentCity + "';";
-    cout << agentQuery << endl;
     bool agentFound = query(agentQuery);
     if(agentFound)
     {
@@ -207,11 +207,13 @@ void listPolicies()
         cout << "Enter the agent Id for the agent found in the table: ";
         cin >> agentId;
         cin.ignore();
+        cout << "Displaying sales records for " + agentName + ":" << endl;
         soldQuery = "SELECT * FROM POLICIES_SOLD WHERE agent_id = " + agentId + ";";
         bool policiesFound = query(soldQuery);
         if(policiesFound)
         {
           string policyQuery;
+          cout << "Displaying types of policies sold by " + agentName + ":" << endl;
           policyQuery = "SELECT name, type, commision_percentage FROM POLICY WHERE policy_id = (SELECT policy_id FROM POLICIES_SOLD WHERE agent_id = " + agentId + ");";
           query(policyQuery);
         }
@@ -236,12 +238,20 @@ void cancelPolicy()
     cout << "You are about to cancel a policy" << endl;
     cout << "What is the purchased ID of the policy you would like to cancel? ";
     cin >> policyId;
-    cout << policyId << endl;
     // Deletes the policy with the right ID
-    deleteString = "DELETE FROM POLICIES_SOLD WHERE POLICY_ID = '" + policyId + "';";
+    deleteString = "DELETE FROM POLICIES_SOLD WHERE purchase_id = " + policyId + ";";
     cout << deleteString << endl;
-    statement = con->createStatement();
-    statement->executeUpdate(deleteString);
+    //statement = con->createStatement();
+    //statement->executeUpdate(deleteString);
+    bool policyCanceled = query(deleteString);
+    if(!policyCanceled)
+    {
+        cout << "Policy was not successfully deleted." << endl;
+    }
+    else
+    {
+        cout << "Policy successfully deleted." << endl;
+    }
 }
 
 // Task 5 adds an agent to the list and displays all appropriate agents
@@ -261,13 +271,12 @@ void addAgent()
   cout << endl;
   // string hardCode = "997" ;
   insertValues = autoAgentId + ", '" + firstName + "', '" + city + "', " + zipCode;
-  //insert(tableName, insertValues); COMMENTED OUT FOR TESTING
+  insert(tableName, insertValues);
   autoAgentId++;
   cout << "Displaying all agents" << endl;
   queryFindAgents = "SELECT A_ID AS Agents_ID, A_NAME AS Agents_name, A_CITY AS Agents_city, A_ZIP as Agents_zip FROM AGENTS;";
   query(queryFindAgents);
   cout << endl;
-
 }
 
 // Connect to the database
@@ -307,6 +316,7 @@ bool query (string q)
             cout<<("\n---------------------------------\n");
             cout<<("Query: \n" + q + "\n\nResult: \n");
             print(resultSet);
+            cout<<("\n---------------------------------\n");
             return true;
         }
         catch (sql::SQLException e) {
