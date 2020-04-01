@@ -1,4 +1,4 @@
-CREATE TABLE Clients (
+CREATE TABLE CLIENTS (
     c_id int UNIQUE NOT NULL PRIMARY KEY,
     c_name char(50) NOT NULL,
     c_city char(50) NOT NULL,
@@ -13,7 +13,7 @@ BEGIN
 END;
     
 
-CREATE TABLE Agents (
+CREATE TABLE AGENTS (
     a_id int UNIQUE NOT NULL PRIMARY KEY,
     a_name char(50) NOT NULL,
     a_city char(50) NOT NULL,
@@ -27,7 +27,7 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot delete from this table';
 END;
 
-CREATE TABLE Policy (
+CREATE TABLE POLICY (
     policy_id int UNIQUE NOT NULL PRIMARY KEY,
     name char(50) NOT NULL,
     type char(50) NOT NULL,
@@ -41,7 +41,7 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot delete from this table';
 END;
 
-CREATE TABLE Policies_sold (
+CREATE TABLE POLICIES_SOLD (
     purchase_id int UNIQUE NOT NULL PRIMARY KEY,
     agent_id int,
     client_id int,
