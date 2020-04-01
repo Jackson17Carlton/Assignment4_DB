@@ -163,25 +163,32 @@ void purchasePolicy(string id, string city)
         string agentsQuery, policyId, amount, soldQuery, agentId;
         cout << "We do offer " + policyChoice + " insurance policies!" << endl;
         agentsQuery = "SELECT A_ID AS Agents_ID, A_NAME as Agents_name, A_CITY as Your_City FROM AGENTS WHERE A_CITY = '" + clientCity + "';";
-        query(agentsQuery);
-        cout << "Enter an agent ID from your town to purchase a policy from: ";
-        cin >> agentId;
-        printPolicies = "SELECT * FROM POLICY WHERE type = '" + policyChoice + "';";
-        query(printPolicies); // Prints table of policies to purchase
-        cout << "Enter a policy ID for the insurance policy you'd like to purchase: ";
-        cin.ignore();
-        cin >> policyId;
-        cout << "Enter an amount for the policy (e.g. 2000.00 with two decimal places): ";
-        cin.ignore();
-        cin >> amount;
-        string purchaseId = boost::lexical_cast<string>(autoPurchaseId); //convert purchaseId to string
-        soldQuery = purchaseId + ", " + agentId + ", " + clientId + ", " + policyId + ", STR_TO_DATE('2020-03-31', '%Y-%m-%d'), " + amount;
-        cout << soldQuery << endl;
-        insert("POLICIES_SOLD", soldQuery); //inserts into policies sold
-        query("SELECT * FROM POLICIES_SOLD");
-        cout << "Your purchase has gone through, reference the policies sold table for proof of purchase!" << endl;
-        cout << "Your purchase ID will be " + purchaseId + "." << endl;
-        autoPurchaseId++;
+        bool agentFound = query(agentsQuery);
+        if(agentFound)
+        {
+            cout << "Enter an agent ID from your town to purchase a policy from: ";
+            cin >> agentId;
+            printPolicies = "SELECT * FROM POLICY WHERE type = '" + policyChoice + "';";
+            query(printPolicies); // Prints table of policies to purchase
+            cout << "Enter a policy ID for the insurance policy you'd like to purchase: ";
+            cin.ignore();
+            cin >> policyId;
+            cout << "Enter an amount for the policy (e.g. 2000.00 with two decimal places): ";
+            cin.ignore();
+            cin >> amount;
+            string purchaseId = boost::lexical_cast<string>(autoPurchaseId); //convert purchaseId to string
+            soldQuery = purchaseId + ", " + agentId + ", " + clientId + ", " + policyId + ", STR_TO_DATE('2020-03-31', '%Y-%m-%d'), " + amount;
+            cout << soldQuery << endl;
+            insert("POLICIES_SOLD", soldQuery); //inserts into policies sold
+            query("SELECT * FROM POLICIES_SOLD");
+            cout << "Your purchase has gone through, reference the policies sold table for proof of purchase!" << endl;
+            cout << "Your purchase ID will be " + purchaseId + "." << endl;
+            autoPurchaseId++;
+        }
+        else
+        {
+          cout << "There were no agents found in the town you provided" << endl;
+        }
     }
     else
     {
@@ -313,9 +320,14 @@ bool query (string q)
 {
         try {
             resultSet = statement->executeQuery(q);
+            if (resultSet == NULL)
+            {
+              return false;
+            }
             cout<<("\n---------------------------------\n");
             cout<<("Query: \n" + q + "\n\nResult: \n");
             print(resultSet);
+
             cout<<("\n---------------------------------\n");
             return true;
         }
